@@ -8,9 +8,9 @@ import { usePathname } from 'next/navigation';
 import { useSession, signIn, signOut } from "next-auth/react";
 
 const navLinks = [
-    { href: "#features", label: "Features" },
-    { href: "/clubs/1", label: "Clubs" },
-    { href: "/dashboard", label: "Dashboard" },
+    { href: "#features", label: "Features", showifLoggedIn: false },
+    { href: "/clubs", label: "Clubs", showifLoggedIn: true },
+    { href: "/dashboard", label: "Dashboard", showifLoggedIn: true },
 ];
 
 
@@ -27,16 +27,23 @@ export function Header() {
                         <span className="hidden font-bold sm:inline-block">ShootingMatch.App</span>
                     </Link>
                     <nav className="flex items-center space-x-6 text-sm font-medium">
-                        {navLinks.map(link => (
-                            <Link
-                                key={link.href}
-                                href={link.href}
-                                className={`transition-colors hover:text-foreground/80 ${pathname === link.href ? 'text-foreground' : 'text-foreground/60'
-                                    }`}
-                            >
-                                {link.label}
-                            </Link>
-                        ))}
+                        {navLinks
+                            .filter(link => {
+                                if (session && session.user) {
+                                    return link.showifLoggedIn;
+                                }
+                                return !link.showifLoggedIn;
+                            })
+                            .map(link => (
+                                <Link
+                                    key={link.href}
+                                    href={link.href}
+                                    className={`transition-colors hover:text-foreground/80 ${pathname === link.href ? 'text-foreground' : 'text-foreground/60'
+                                        }`}
+                                >
+                                    {link.label}
+                                </Link>
+                            ))}
                     </nav>
                 </div>
 
@@ -59,7 +66,12 @@ export function Header() {
                         </Link>
                         <div className="my-4 h-[calc(100vh-8rem)] pb-10 pl-6">
                             <div className="flex flex-col space-y-3">
-                                {navLinks.map(link => (
+                                {navLinks.filter(link => {
+                                if (session && session.user) {
+                                    return link.showifLoggedIn;
+                                }
+                                return !link.showifLoggedIn;
+                            }).map(link => (
                                     <Link
                                         key={link.href}
                                         href={link.href}
@@ -85,7 +97,7 @@ export function Header() {
                     <nav className="flex items-center">
                         {session && session.user ? (
                             <>
-                                <span className="mr-4">{session.user.email}</span>
+                                <Link href="/profile" className="hover:bg-accent hover:text-accent-foreground">{session.user.email}</Link>
                                 <Button variant="ghost" className="mr-2" onClick={() => signOut()}>Logout</Button>
                             </>
                         ) : (

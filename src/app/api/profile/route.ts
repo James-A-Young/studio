@@ -19,12 +19,15 @@ export async function GET(req: NextRequest) {
     displayName: user.displayName || "",
     placeOfBirth: user.placeOfBirth || "",
     dateOfBirth: user.dateOfBirth || null,
-    address: user.address || "",
+    address: user.address || { address: "", postcode: "", city: "", country: "" },
     facNumber: user.facNumber || "",
     facExpiry: user.facExpiry || null,
     sgcNumber: user.sgcNumber || "",
     sgcExpiry: user.sgcExpiry || null,
-    email: user.email
+    email: user.email,
+    updatedAt: user.updatedAt,
+    onSystem: user.onSystem,
+    location: user.location || null
   });
 }
 
@@ -48,11 +51,14 @@ export async function PUT(req: NextRequest) {
     displayName: user.displayName || "",
     placeOfBirth: user.placeOfBirth || "",
     dateOfBirth: user.dateOfBirth || null,
-    address: user.address || "",
+    address: user.address || { address: "", postcode: "", city: "", country: "" },
     facNumber: user.facNumber || "",
     facExpiry: user.facExpiry || null,
     sgcNumber: user.sgcNumber || "",
     sgcExpiry: user.sgcExpiry || null,
-    email: user.email
+    email: user.email,
+    updatedAt: user.updatedAt,
+    onSystem: user.onSystem,
+    location: user.location || null
   });
 }

@@ -21,11 +21,14 @@ export function ProfilePage() {
     displayName: "",
     placeOfBirth: "",
     dateOfBirth: "",
-    address: "",
+    address: { address: "", postcode: "", city: "", country: "" },
     facNumber: "",
     facExpiry: "",
     sgcNumber: "",
-    sgcExpiry: ""
+    sgcExpiry: "",
+    onSystem: true,
+    location: null,
+    updatedAt: ""
   });
   const [loading, setLoading] = useState(true);
   const router = useRouter();
@@ -43,18 +46,28 @@ export function ProfilePage() {
           displayName: data.displayName || "",
           placeOfBirth: data.placeOfBirth || "",
           dateOfBirth: data.dateOfBirth ? data.dateOfBirth.substring(0, 10) : "",
-          address: data.address || "",
+          address: data.address || { address: "", postcode: "", city: "", country: "" },
           facNumber: data.facNumber || "",
           facExpiry: data.facExpiry ? data.facExpiry.substring(0, 10) : "",
           sgcNumber: data.sgcNumber || "",
-          sgcExpiry: data.sgcExpiry ? data.sgcExpiry.substring(0, 10) : ""
+          sgcExpiry: data.sgcExpiry ? data.sgcExpiry.substring(0, 10) : "",
+          onSystem: data.onSystem,
+          location: data.location,
+          updatedAt: data.updatedAt
         });
         setLoading(false);
       });
   }, [session, status, router]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    // Handle address fields
+    if (name.startsWith("address.")) {
+      const key = name.split(".")[1];
+      setForm({ ...form, address: { ...form.address, [key]: value } });
+    } else {
+      setForm({ ...form, [name]: value });
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -113,12 +126,40 @@ export function ProfilePage() {
             />
           </div>
           <div>
-            <Label htmlFor="address">Address</Label>
+            <Label>Address</Label>
             <Input
               type="text"
-              name="address"
-              id="address"
-              value={form.address}
+              name="address.address"
+              id="address.address"
+              placeholder="Street Address"
+              value={form.address.address}
+              onChange={handleChange}
+            />
+            <Input
+              type="text"
+              name="address.city"
+              id="address.city"
+              placeholder="City"
+              className="mt-1"
+              value={form.address.city}
+              onChange={handleChange}
+            />
+            <Input
+              type="text"
+              name="address.postcode"
+              id="address.postcode"
+              placeholder="Postcode"
+              className="mt-1"
+              value={form.address.postcode}
+              onChange={handleChange}
+            />
+            <Input
+              type="text"
+              name="address.country"
+              id="address.country"
+              placeholder="Country"
+              className="mt-1"
+              value={form.address.country}
               onChange={handleChange}
             />
           </div>

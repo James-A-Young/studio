@@ -23,7 +23,18 @@ describe('ClubRepository', () => {
     // Create a user and a club for tests
     const user = await UserModel.create({ email: 'member@example.com', displayName: 'Member' });
     userId = user._id.toString();
-    const club = await ClubModel.create({ name: 'Test Club', address: '123 Main St', contactEmail: 'contact@testclub.com', disciplines: [], ranges: [] });
+    const club = await ClubModel.create({
+      name: 'Test Club',
+      address: {
+        address: '123 Main St',
+        postcode: 'AB12 3CD',
+        city: 'Testville',
+        country: 'UK',
+      },
+      contactEmail: 'contact@testclub.com',
+      disciplines: [],
+      ranges: []
+    });
     clubId = club._id.toString();
   });
 
