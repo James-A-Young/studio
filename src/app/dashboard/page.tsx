@@ -9,14 +9,6 @@ import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 
-const userClubs = [
-  { id: '1', name: 'Oakridge Shooters', role: 'Manager' },
-  { id: '2', name: 'Pine Valley Marksmen', role: 'Member' },
-  { id: '3', name: 'Riverbend Practical Shooters', role: 'Member' },
-];
-
-
-
 export default function DashboardPageWrapper() {
   return (
     <SessionProvider>
@@ -25,10 +17,39 @@ export default function DashboardPageWrapper() {
   );
 }
 
+
+import React, { useState } from 'react';
+
 function DashboardPage() {
   const { data: session, status } = useSession();
-  if (status === "loading") {
+  const [clubs, setClubs] = React.useState<any[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (status === 'authenticated') {
+      setLoading(true);
+      fetch('/api/clubs/foruser')
+        .then(async (res) => {
+          if (!res.ok) throw new Error('Failed to fetch clubs');
+          return res.json();
+        })
+        .then(data => {
+          setClubs(data);
+          setLoading(false);
+        })
+        .catch(err => {
+          setError(err.message);
+          setLoading(false);
+        });
+    }
+  }, [status]);
+
+  if (status === "loading" || loading) {
     return <div className="flex justify-center items-center h-screen">Loading...</div>;
+  }
+  if (error) {
+    return <div className="flex justify-center items-center h-screen text-red-500">{error}</div>;
   }
 
   return (
@@ -46,17 +67,27 @@ function DashboardPage() {
           </CardHeader>
           <CardContent>
             <ul className="space-y-4">
-              {userClubs.map(club => (
-                <li key={club.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
-                  <div>
-                    <p className="font-semibold">{club.name}</p>
-                    <p className="text-sm text-muted-foreground">{club.role}</p>
-                  </div>
-                  <Button asChild variant="outline" size="sm">
-                    <Link href={`/dashboard/clubs/${club.id}`}>Manage</Link>
-                  </Button>
-                </li>
-              ))}
+              {clubs.length === 0 ? (
+                <li className="text-muted-foreground">You are not a member of any clubs yet.</li>
+              ) : (
+                clubs.map(club => (
+                  <li key={club._id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div>
+                      <p className="font-semibold">{club.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {club.roles && club.roles.length > 0
+                          ? club.roles.map((r: any) => r.role).join(', ')
+                          : club.memberships && club.memberships.length > 0
+                            ? 'Member'
+                            : ''}
+                      </p>
+                    </div>
+                    <Button asChild variant="outline" size="sm">
+                      <Link href={`/dashboard/clubs/${club._id}`}>Manage</Link>
+                    </Button>
+                  </li>
+                ))
+              )}
             </ul>
           </CardContent>
         </Card>

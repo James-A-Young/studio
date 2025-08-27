@@ -6,6 +6,59 @@ import { AttendanceModel } from './attendance.model';
 import { MembershipRequestModel } from './membershipRequest.model';
 
 export class ClubRepository {
+  /**
+   * Returns all clubs where the user is a member (active or inactive) or has an active clubrole.
+   * Populates the memberships and roles for that user only.
+   */
+  async GetClubsForUser(userId: string) 
+  {
+  await connectToDatabase();
+  const now = new Date();
+  const mongoose = require('mongoose');
+  const clubs = await ClubModel.aggregate([
+    {
+      $lookup: {
+        from: 'memberships',
+        let: { clubId: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $and: [
+            { $eq: ['$club', '$$clubId'] },
+            { $eq: ['$user', new mongoose.Types.ObjectId(userId)] }
+          ] } } }
+        ],
+        as: 'memberships'
+      }
+    },
+    {
+      $lookup: {
+        from: 'clubroleassignments',
+        let: { clubId: '$_id' },
+        pipeline: [
+          { $match: { $expr: { $and: [
+            { $eq: ['$club', '$$clubId'] },
+            { $eq: ['$user', new mongoose.Types.ObjectId(userId)] },
+            { $or: [
+              { $eq: ['$endDate', null] },
+              { $gt: ['$endDate', now] },
+              { $not: ['$endDate'] }
+            ] }
+          ] } } }
+        ],
+        as: 'roles'
+      }
+    },
+    {
+      $match: {
+        $or: [
+          { 'memberships.0': { $exists: true } },
+          { 'roles.0': { $exists: true } }
+        ]
+      }
+    }
+  ]);
+  return clubs;
+}
+
   async getAllClubs() {
     await connectToDatabase();
     return ClubModel.find({}).lean();

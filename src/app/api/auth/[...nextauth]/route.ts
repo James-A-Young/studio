@@ -30,7 +30,7 @@ export const authOptions: AuthOptions = {
           try{if (valid.newProtectedPassword) { userRepo.setPassword(result.user.email, valid.newProtectedPassword)}} catch (error) {
             console.error("Error setting new password, ignorning", error);
           }
-          return { id: result.user.email, name: result.user.displayName, email: result.user.email } as NextAuthUser;
+          return { id: result.user._id, name: result.user.displayName, email: result.user.email } as NextAuthUser;
         }
 
         return null;
@@ -54,6 +54,7 @@ export const authOptions: AuthOptions = {
     async session({ session, token }: { session: Session; token: any }) {
       if (session.user && token?.sub) {
         (session.user as any).id = token.sub;
+        (session.user as any).email = token.email;
       }
       return session;
     },
